@@ -3,9 +3,12 @@
   (:refer-clojure :exclude [get])
   (:require [clojure.core :as clj]
             [webica.core :as w]
+            [clojure.string :as string]
             [me.raynes.fs :as fs])
   (:import [org.openqa.selenium.chrome
-            ChromeDriver]))
+            ChromeDriver]
+           [java.io
+            File]))
 
 (w/intern-java ChromeDriver *ns*
   {:clear '[quit kill]})
@@ -22,6 +25,8 @@
         flags (vec (first args))]
     ;; Call ChromeOptions.addArguments()
     (.addArguments chrome-options flags)
+    (when-let [binary (some #(when (string/starts-with? % "--binary") %) (first args))]
+      (.setBinary chrome-options (second (string/split binary #"="))))
     chrome-options))
 
 (defn start-chrome [chromedriver & args]
